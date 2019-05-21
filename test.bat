@@ -1,2 +1,0 @@
-call gitpush.sh
-pause
