@@ -25,12 +25,16 @@ class GRL_Well:
     def __gen_hydrograph_df(self):
         if self.aquifer == 'SANKOTY':
             df = self.telemetry_df[['TIMESTAMP', 'sankoty_water_level']]
-            df['head'] = self.top_of_casing - pd.to_numeric(df['sankoty_water_level'], errors = 'coerce')
+            df['head'] = self.ground_surface - pd.to_numeric(df['sankoty_water_level'], errors = 'coerce')
+            df['depth_to_water_from_land_surface'] = pd.to_numeric(df['sankoty_water_level'], errors = 'coerce') - (self.top_of_casing - self.ground_surface)
         else: 
             df = self.telemetry_df[['TIMESTAMP', 'tampico_water_level']]
-            df['head'] = self.top_of_casing - pd.to_numeric(df['tampico_water_level'], errors = 'coerce')
+            df['head'] = self.ground_surface - pd.to_numeric(df['tampico_water_level'], errors = 'coerce')
+            df['depth_to_water_from_land_surface'] = pd.to_numeric(df['tampico_water_level'], errors = 'coerce') - (self.top_of_casing - self.ground_surface)
         
         df.drop_duplicates(subset = 'TIMESTAMP', keep = 'first', inplace = True)
+        
+        df = df.round({'head' : 2, 'depth_to_water_from_land_surface' : 2})
         
         return df 
     
@@ -41,12 +45,14 @@ class GRL_Well:
                             "carbon_copy_csv",
                             self.p_num,
                             self.well_name
-                        )
+                        ),
+                    index = False
                 )
 
     def gen_hydrograph_csv(self):
-        self.__gen_hydrograph_df().to_csv(
-                    path_or_buf = self.__hyd_csv_path
+        self.__gen_hydrograph_df()[['TIMESTAMP', 'depth_to_water_from_land_surface', 'head']].to_csv(
+                    path_or_buf = self.__hyd_csv_path,
+                    index_label = 'RECORD'
                 )
         
     def gen_mpl_hydrograph(self):
@@ -64,13 +70,14 @@ class GRL_Well:
         plt.savefig(fname = self.__mpl_hyd_path)
         plt.clf()
     
-    def __init__(self, dat_file, well_name, p_num, aquifer, top_of_casing, top_of_aq, lam_xy, lonLat_WGS84, webMerc_xy, nested) :
+    def __init__(self, dat_file, well_name, p_num, aquifer, top_of_casing, stick_up, top_of_aq, lam_xy, lonLat_WGS84, webMerc_xy, nested) :
         self.dat_file = dat_file
         self.__dat_location = self.__dat_dir + self.dat_file
         self.well_name = well_name
         self.p_num = p_num
         self.aquifer = aquifer.upper()
         self.top_of_casing = top_of_casing
+        self.ground_surface = top_of_casing - stick_up
         self.top_of_aq = top_of_aq
         self.lam_xy = lam_xy
         self.lonLat_WGS84 = lonLat_WGS84
