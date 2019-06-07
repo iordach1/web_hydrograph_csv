@@ -70,7 +70,7 @@ class SG_Well:
         plt.savefig(fname = self.__mpl_hyd_path)
         plt.clf()
     
-    def __init__(self, dat_file, well_name, p_num, aquifer, top_of_casing, stick_up, top_of_aq, lam_xy, lonLat_WGS84, webMerc_xy, nested) :
+    def __init__(self, dat_file, well_name, p_num, aquifer, top_of_casing, stick_up, lam_xy, lonLat_WGS84, webMerc_xy) :
         self.dat_file = dat_file
         self.__dat_location = self.__dat_dir + self.dat_file
         self.well_name = well_name
@@ -78,11 +78,9 @@ class SG_Well:
         self.aquifer = aquifer.upper()
         self.top_of_casing = top_of_casing
         self.ground_surface = top_of_casing - stick_up
-        self.top_of_aq = top_of_aq
         self.lam_xy = lam_xy
         self.lonLat_WGS84 = lonLat_WGS84
         self.webMerc_xy = webMerc_xy
-        self.nested = nested
         self.telemetry_df = self.__gen_telemetry_dataframe()
         self.__hyd_csv_path = "{0}\\{1}\\{2}_{3}_hyd.csv".format(
                             self.__output_dir,
